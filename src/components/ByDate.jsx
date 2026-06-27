@@ -37,6 +37,7 @@ export default function ByDate({ records = {}, selectedDate, setSelectedDate }) 
   const extra = extraList.reduce((sum, e) => sum + Number(e.amount || 0), 0);
   const net = gross - cng - extra;
   const totalTrips = trips.length;
+  const totalKm = trips.reduce((sum, t) => sum + Number(t.km || 0), 0);
   const avgFare = totalTrips > 0 ? (gross / totalTrips).toFixed(2) : '0.00';
   const attendance = dayRecord?.status || 'No record';
 
@@ -190,8 +191,14 @@ export default function ByDate({ records = {}, selectedDate, setSelectedDate }) 
               <div className="date-breakdown-val font-number">{String(totalTrips).padStart(2, '0')}</div>
             </div>
 
-            {/* Avg Fare */}
+            {/* Total Distance */}
             <div className="date-breakdown-item">
+              <div className="date-breakdown-label">Total Distance</div>
+              <div className="date-breakdown-val font-number" style={{ color: 'var(--text-secondary)' }}>{totalKm.toFixed(1)} km</div>
+            </div>
+
+            {/* Avg Fare */}
+            <div className="date-breakdown-item" style={{ gridColumn: 'span 2' }}>
               <div className="date-breakdown-label">Avg Fare per Trip</div>
               <div className="date-breakdown-val font-number">{formatCurrency(avgFare)}</div>
             </div>

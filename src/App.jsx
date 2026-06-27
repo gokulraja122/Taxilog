@@ -163,6 +163,7 @@ export default function App() {
         const extraTotal = (dayRecord.extra || []).reduce((sum, e) => sum + Number(e.amount || 0), 0);
         const net = earnings - cng - extraTotal;
         const tripsCount = trips.length;
+        const km = trips.reduce((sum, t) => sum + Number(t.km || 0), 0);
 
         const dateLabel = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' });
         const fullDateLabel = date.toLocaleDateString('en-IN', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
@@ -176,6 +177,7 @@ export default function App() {
           extra: extraTotal,
           net,
           tripsCount,
+          km,
           status: dayRecord.status || 'absent'
         };
       });
@@ -190,6 +192,7 @@ export default function App() {
       const gross = trips.reduce((sum, t) => sum + Number(t.fare || 0), 0);
       const cng = Number(dayRecord?.cng || 0);
       const extraTotal = (dayRecord?.extra || []).reduce((sum, e) => sum + Number(e.amount || 0), 0);
+      const totalKm = trips.reduce((sum, t) => sum + Number(t.km || 0), 0);
 
       exportData = {
         selectedDate: selectedDateByDate,
@@ -201,6 +204,7 @@ export default function App() {
         extraList: dayRecord?.extra || [],
         net: gross - cng - extraTotal,
         totalTrips: trips.length,
+        totalKm,
         avgFare: trips.length > 0 ? (gross / trips.length).toFixed(2) : '0.00',
         attendance: dayRecord?.status || 'absent'
       };
@@ -217,6 +221,7 @@ export default function App() {
           let cng = 0;
           let extra = 0;
           let tripsCount = 0;
+          let km = 0;
           let activeDaysCount = 0;
 
           const currentDay = new Date(start);
@@ -233,6 +238,7 @@ export default function App() {
               cng += Number(dayRecord.cng || 0);
               extra += (dayRecord.extra || []).reduce((sum, e) => sum + Number(e.amount || 0), 0);
               tripsCount += trips.length;
+              km += trips.reduce((sum, t) => sum + Number(t.km || 0), 0);
             }
             currentDay.setDate(currentDay.getDate() + 1);
           }
@@ -247,6 +253,7 @@ export default function App() {
             extra,
             net: earnings - cng - extra,
             tripsCount,
+            km,
             activeDaysCount
           });
         }
@@ -275,6 +282,7 @@ export default function App() {
             cng: 0,
             extra: 0,
             tripsCount: 0,
+            km: 0,
             loggedDays: 0,
           };
         }
@@ -284,6 +292,7 @@ export default function App() {
         monthsMap[yearMonth].cng += Number(dayRecord.cng || 0);
         monthsMap[yearMonth].extra += (dayRecord.extra || []).reduce((sum, e) => sum + Number(e.amount || 0), 0);
         monthsMap[yearMonth].tripsCount += trips.length;
+        monthsMap[yearMonth].km += trips.reduce((sum, t) => sum + Number(t.km || 0), 0);
         monthsMap[yearMonth].loggedDays += 1;
       });
 

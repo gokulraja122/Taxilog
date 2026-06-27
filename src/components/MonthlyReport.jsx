@@ -27,6 +27,7 @@ export default function MonthlyReport({ records = {} }) {
           cng: 0,
           extra: 0,
           tripsCount: 0,
+          km: 0,
           loggedDays: 0,
         };
       }
@@ -36,6 +37,7 @@ export default function MonthlyReport({ records = {} }) {
       monthsMap[yearMonth].cng += Number(dayRecord.cng || 0);
       monthsMap[yearMonth].extra += (dayRecord.extra || []).reduce((sum, e) => sum + Number(e.amount || 0), 0);
       monthsMap[yearMonth].tripsCount += trips.length;
+      monthsMap[yearMonth].km += trips.reduce((sum, t) => sum + Number(t.km || 0), 0);
       monthsMap[yearMonth].loggedDays += 1;
     });
     
@@ -51,6 +53,7 @@ export default function MonthlyReport({ records = {} }) {
   const totalExtra = monthlyList.reduce((sum, m) => sum + m.extra, 0);
   const totalNet = totalEarnings - totalCng - totalExtra;
   const totalTrips = monthlyList.reduce((sum, m) => sum + m.tripsCount, 0);
+  const totalKm = monthlyList.reduce((sum, m) => sum + m.km, 0);
   const totalLoggedDays = monthlyList.reduce((sum, m) => sum + m.loggedDays, 0);
 
   const formatCurrency = (val) => {
@@ -84,6 +87,7 @@ export default function MonthlyReport({ records = {} }) {
                   <th>Month</th>
                   <th style={{ width: '110px', textAlign: 'center' }}>Logged Days</th>
                   <th style={{ width: '80px', textAlign: 'center' }}>Trips</th>
+                  <th style={{ textAlign: 'right' }}>Distance</th>
                   <th style={{ textAlign: 'right' }}>Gross Earnings</th>
                   <th style={{ textAlign: 'right' }}>CNG Expense</th>
                   <th style={{ textAlign: 'right' }}>Extra Expense</th>
@@ -103,6 +107,9 @@ export default function MonthlyReport({ records = {} }) {
                       </td>
                       <td className="font-number" style={{ textAlign: 'center' }}>
                         {m.tripsCount}
+                      </td>
+                      <td className="font-number" style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>
+                        {m.km > 0 ? `${m.km.toFixed(1)} km` : '-'}
                       </td>
                       <td className="font-number" style={{ textAlign: 'right', color: 'var(--primary)' }}>
                         {formatCurrency(m.earnings)}
@@ -126,6 +133,9 @@ export default function MonthlyReport({ records = {} }) {
                   </td>
                   <td className="font-number" style={{ textAlign: 'center' }}>
                     {totalTrips}
+                  </td>
+                  <td className="font-number" style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>
+                    {totalKm.toFixed(1)} km
                   </td>
                   <td className="font-number" style={{ textAlign: 'right', color: 'var(--primary)' }}>
                     {formatCurrency(totalEarnings)}

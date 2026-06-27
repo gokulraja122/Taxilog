@@ -129,6 +129,7 @@ export async function exportToPdf(activeTab, data) {
     const totalExtra = chartData.reduce((sum, d) => sum + (d.extra || 0), 0);
     const totalNet = totalEarnings - totalCng - totalExtra;
     const totalTrips = chartData.reduce((sum, d) => sum + d.tripsCount, 0);
+    const totalKm = chartData.reduce((sum, d) => sum + (d.km || 0), 0);
 
     bodyHtml = `
       <div class="pdf-meta">
@@ -136,7 +137,7 @@ export async function exportToPdf(activeTab, data) {
         <div><strong>Exported:</strong> ${new Date().toLocaleString('en-IN')}</div>
       </div>
 
-      <div class="pdf-stats-row" style="grid-template-columns: repeat(5, 1fr);">
+      <div class="pdf-stats-row" style="grid-template-columns: repeat(6, 1fr);">
         <div class="pdf-stat-pill">
           <div class="pdf-stat-label">Total Earnings</div>
           <div class="pdf-stat-value" style="color: var(--primary);">${formatCurrency(totalEarnings)}</div>
@@ -144,6 +145,10 @@ export async function exportToPdf(activeTab, data) {
         <div class="pdf-stat-pill">
           <div class="pdf-stat-label">Total Trips</div>
           <div class="pdf-stat-value">${String(totalTrips).padStart(2, '0')}</div>
+        </div>
+        <div class="pdf-stat-pill">
+          <div class="pdf-stat-label">Total Distance</div>
+          <div class="pdf-stat-value" style="color: var(--text-secondary);">${totalKm.toFixed(1)} km</div>
         </div>
         <div class="pdf-stat-pill">
           <div class="pdf-stat-label">Total CNG</div>
@@ -170,6 +175,7 @@ export async function exportToPdf(activeTab, data) {
             <th>Date</th>
             <th style="width: 80px; text-align: center;">Status</th>
             <th style="width: 80px; text-align: center;">Trips</th>
+            <th style="text-align: right;">Distance</th>
             <th style="text-align: right;">Earnings</th>
             <th style="text-align: right;">CNG</th>
             <th style="text-align: right;">Extra</th>
@@ -186,6 +192,7 @@ export async function exportToPdf(activeTab, data) {
                 </span>
               </td>
               <td class="font-number" style="text-align: center;">${d.tripsCount}</td>
+              <td class="font-number" style="text-align: right; color: var(--text-secondary);">${d.km > 0 ? `${d.km.toFixed(1)} km` : '-'}</td>
               <td class="font-number" style="text-align: right; color: var(--primary);">${formatCurrency(d.earnings)}</td>
               <td class="font-number" style="text-align: right; color: var(--red);">${formatCurrency(d.cng)}</td>
               <td class="font-number" style="text-align: right; color: var(--red);">${formatCurrency(d.extra || 0)}</td>
@@ -197,6 +204,7 @@ export async function exportToPdf(activeTab, data) {
           <tr class="row-total">
             <td colspan="2" style="font-family: var(--font-heading);">PERIOD TOTALS</td>
             <td class="font-number" style="text-align: center;">${totalTrips}</td>
+            <td class="font-number" style="text-align: right; color: var(--text-secondary);">${totalKm.toFixed(1)} km</td>
             <td class="font-number" style="text-align: right; color: var(--primary);">${formatCurrency(totalEarnings)}</td>
             <td class="font-number" style="text-align: right; color: var(--red);">${formatCurrency(totalCng)}</td>
             <td class="font-number" style="text-align: right; color: var(--red);">${formatCurrency(totalExtra)}</td>
@@ -232,6 +240,7 @@ export async function exportToPdf(activeTab, data) {
       const extraList = data.extraList || [];
       const net = data.net || 0;
       const totalTrips = data.totalTrips || 0;
+      const totalKm = data.totalKm || 0;
       const avgFare = data.avgFare || '0.00';
       const attendance = data.attendance || 'absent';
 
@@ -241,33 +250,37 @@ export async function exportToPdf(activeTab, data) {
           <div><strong>Attendance Status:</strong> ${attendance.toUpperCase()}</div>
         </div>
 
-        <div class="pdf-stats-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 2rem;">
+        <div class="pdf-stats-row" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 2rem;">
           <div class="pdf-stat-pill">
             <div class="pdf-stat-label">Gross Earnings</div>
-            <div class="pdf-stat-value" style="color: var(--primary); font-size: 2rem;">${formatCurrency(gross)}</div>
+            <div class="pdf-stat-value" style="color: var(--primary); font-size: 1.7rem;">${formatCurrency(gross)}</div>
           </div>
           <div class="pdf-stat-pill">
             <div class="pdf-stat-label">CNG Expense</div>
-            <div class="pdf-stat-value" style="color: var(--red); font-size: 2rem;">${formatCurrency(cng)}</div>
+            <div class="pdf-stat-value" style="color: var(--red); font-size: 1.7rem;">${formatCurrency(cng)}</div>
           </div>
           <div class="pdf-stat-pill">
             <div class="pdf-stat-label">Extra Expense</div>
-            <div class="pdf-stat-value" style="color: var(--red); font-size: 2rem;">${formatCurrency(extra)}</div>
+            <div class="pdf-stat-value" style="color: var(--red); font-size: 1.7rem;">${formatCurrency(extra)}</div>
+          </div>
+          <div class="pdf-stat-pill">
+            <div class="pdf-stat-label">Net Profit</div>
+            <div class="pdf-stat-value" style="color: ${net >= 0 ? 'var(--green)' : 'var(--red)'}; font-size: 1.7rem;">${formatCurrency(net)}</div>
           </div>
         </div>
 
         <div class="pdf-stats-row" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 2rem;">
           <div class="pdf-stat-pill">
-            <div class="pdf-stat-label">Net Profit</div>
-            <div class="pdf-stat-value" style="color: ${net >= 0 ? 'var(--green)' : 'var(--red)'};">${formatCurrency(net)}</div>
+            <div class="pdf-stat-label">Total Trips</div>
+            <div class="pdf-stat-value" style="font-size: 1.7rem;">${String(totalTrips).padStart(2, '0')}</div>
           </div>
           <div class="pdf-stat-pill">
-            <div class="pdf-stat-label">Total Trips</div>
-            <div class="pdf-stat-value">${String(totalTrips).padStart(2, '0')}</div>
+            <div class="pdf-stat-label">Total Distance</div>
+            <div class="pdf-stat-value" style="color: var(--text-secondary); font-size: 1.7rem;">${totalKm.toFixed(1)} km</div>
           </div>
           <div class="pdf-stat-pill">
             <div class="pdf-stat-label">Avg Fare / Trip</div>
-            <div class="pdf-stat-value" style="color: var(--primary);">${formatCurrency(avgFare)}</div>
+            <div class="pdf-stat-value" style="color: var(--primary); font-size: 1.7rem;">${formatCurrency(avgFare)}</div>
           </div>
         </div>
 
@@ -336,6 +349,7 @@ export async function exportToPdf(activeTab, data) {
     const totalExtra = chartData.reduce((sum, w) => sum + (w.extra || 0), 0);
     const totalNet = totalEarnings - totalCng - totalExtra;
     const totalTrips = chartData.reduce((sum, w) => sum + w.tripsCount, 0);
+    const totalKm = chartData.reduce((sum, w) => sum + (w.km || 0), 0);
 
     bodyHtml = `
       <div class="pdf-meta">
@@ -343,7 +357,7 @@ export async function exportToPdf(activeTab, data) {
         <div><strong>Exported:</strong> ${new Date().toLocaleString('en-IN')}</div>
       </div>
 
-      <div class="pdf-stats-row" style="grid-template-columns: repeat(5, 1fr);">
+      <div class="pdf-stats-row" style="grid-template-columns: repeat(6, 1fr);">
         <div class="pdf-stat-pill">
           <div class="pdf-stat-label">Total Earnings</div>
           <div class="pdf-stat-value" style="color: var(--primary);">${formatCurrency(totalEarnings)}</div>
@@ -351,6 +365,10 @@ export async function exportToPdf(activeTab, data) {
         <div class="pdf-stat-pill">
           <div class="pdf-stat-label">Total Trips</div>
           <div class="pdf-stat-value">${String(totalTrips).padStart(2, '0')}</div>
+        </div>
+        <div class="pdf-stat-pill">
+          <div class="pdf-stat-label">Total Distance</div>
+          <div class="pdf-stat-value" style="color: var(--text-secondary);">${totalKm.toFixed(1)} km</div>
         </div>
         <div class="pdf-stat-pill">
           <div class="pdf-stat-label">Total CNG</div>
@@ -377,6 +395,7 @@ export async function exportToPdf(activeTab, data) {
             <th>Week Range</th>
             <th style="width: 110px; text-align: center;">Logged Days</th>
             <th style="width: 80px; text-align: center;">Trips</th>
+            <th style="text-align: right;">Distance</th>
             <th style="text-align: right;">Earnings</th>
             <th style="text-align: right;">CNG</th>
             <th style="text-align: right;">Extra</th>
@@ -389,6 +408,7 @@ export async function exportToPdf(activeTab, data) {
               <td class="font-heading" style="font-weight: bold; font-size: 1.05rem;">${w.dateRangeLabel}</td>
               <td class="font-number" style="text-align: center;">${w.activeDaysCount} days</td>
               <td class="font-number" style="text-align: center;">${w.tripsCount}</td>
+              <td class="font-number" style="text-align: right; color: var(--text-secondary);">${w.km > 0 ? `${w.km.toFixed(1)} km` : '-'}</td>
               <td class="font-number" style="text-align: right; color: var(--primary);">${formatCurrency(w.earnings)}</td>
               <td class="font-number" style="text-align: right; color: var(--red);">${formatCurrency(w.cng)}</td>
               <td class="font-number" style="text-align: right; color: var(--red);">${formatCurrency(w.extra || 0)}</td>
@@ -400,6 +420,7 @@ export async function exportToPdf(activeTab, data) {
           <tr class="row-total">
             <td colspan="2" style="font-family: var(--font-heading);">PERIOD TOTALS</td>
             <td class="font-number" style="text-align: center;">${totalTrips}</td>
+            <td class="font-number" style="text-align: right; color: var(--text-secondary);">${totalKm.toFixed(1)} km</td>
             <td class="font-number" style="text-align: right; color: var(--primary);">${formatCurrency(totalEarnings)}</td>
             <td class="font-number" style="text-align: right; color: var(--red);">${formatCurrency(totalCng)}</td>
             <td class="font-number" style="text-align: right; color: var(--red);">${formatCurrency(totalExtra)}</td>
@@ -420,6 +441,7 @@ export async function exportToPdf(activeTab, data) {
     const totalExtra = monthlyList.reduce((sum, m) => sum + (m.extra || 0), 0);
     const totalNet = totalEarnings - totalCng - totalExtra;
     const totalTrips = monthlyList.reduce((sum, m) => sum + m.tripsCount, 0);
+    const totalKm = monthlyList.reduce((sum, m) => sum + (m.km || 0), 0);
     const totalLoggedDays = monthlyList.reduce((sum, m) => sum + m.loggedDays, 0);
 
     bodyHtml = `
@@ -428,7 +450,7 @@ export async function exportToPdf(activeTab, data) {
         <div><strong>Exported:</strong> ${new Date().toLocaleString('en-IN')}</div>
       </div>
 
-      <div class="pdf-stats-row" style="grid-template-columns: repeat(5, 1fr);">
+      <div class="pdf-stats-row" style="grid-template-columns: repeat(6, 1fr);">
         <div class="pdf-stat-pill">
           <div class="pdf-stat-label">Total Earnings</div>
           <div class="pdf-stat-value" style="color: var(--primary);">${formatCurrency(totalEarnings)}</div>
@@ -436,6 +458,10 @@ export async function exportToPdf(activeTab, data) {
         <div class="pdf-stat-pill">
           <div class="pdf-stat-label">Total Trips</div>
           <div class="pdf-stat-value">${String(totalTrips).padStart(2, '0')}</div>
+        </div>
+        <div class="pdf-stat-pill">
+          <div class="pdf-stat-label">Total Distance</div>
+          <div class="pdf-stat-value" style="color: var(--text-secondary);">${totalKm.toFixed(1)} km</div>
         </div>
         <div class="pdf-stat-pill">
           <div class="pdf-stat-label">Total CNG</div>
@@ -462,6 +488,7 @@ export async function exportToPdf(activeTab, data) {
             <th>Month</th>
             <th style="width: 120px; text-align: center;">Logged Days</th>
             <th style="width: 80px; text-align: center;">Trips</th>
+            <th style="text-align: right;">Distance</th>
             <th style="text-align: right;">Gross Earnings</th>
             <th style="text-align: right;">CNG Expense</th>
             <th style="text-align: right;">Extra Expense</th>
@@ -476,6 +503,7 @@ export async function exportToPdf(activeTab, data) {
                 <td class="font-heading" style="font-weight: bold; font-size: 1.1rem;">${m.monthName}</td>
                 <td class="font-number" style="text-align: center;">${m.loggedDays} days</td>
                 <td class="font-number" style="text-align: center;">${m.tripsCount}</td>
+                <td class="font-number" style="text-align: right; color: var(--text-secondary);">${m.km > 0 ? `${m.km.toFixed(1)} km` : '-'}</td>
                 <td class="font-number" style="text-align: right; color: var(--primary);">${formatCurrency(m.earnings)}</td>
                 <td class="font-number" style="text-align: right; color: var(--red);">${formatCurrency(m.cng)}</td>
                 <td class="font-number" style="text-align: right; color: var(--red);">${formatCurrency(m.extra || 0)}</td>
@@ -489,6 +517,7 @@ export async function exportToPdf(activeTab, data) {
             <td>TOTAL PERIOD</td>
             <td class="font-number" style="text-align: center;">${totalLoggedDays} days</td>
             <td class="font-number" style="text-align: center;">${totalTrips}</td>
+            <td class="font-number" style="text-align: right; color: var(--text-secondary);">${totalKm.toFixed(1)} km</td>
             <td class="font-number" style="text-align: right; color: var(--primary);">${formatCurrency(totalEarnings)}</td>
             <td class="font-number" style="text-align: right; color: var(--red);">${formatCurrency(totalCng)}</td>
             <td class="font-number" style="text-align: right; color: var(--red);">${formatCurrency(totalExtra)}</td>

@@ -65,6 +65,7 @@ export default function WeeklyReport({ records = {} }) {
       let cng = 0;
       let extra = 0;
       let tripsCount = 0;
+      let km = 0;
       let activeDaysCount = 0;
 
       // Loop through each day of this week
@@ -79,6 +80,7 @@ export default function WeeklyReport({ records = {} }) {
           cng += Number(dayRecord.cng || 0);
           extra += (dayRecord.extra || []).reduce((sum, e) => sum + Number(e.amount || 0), 0);
           tripsCount += trips.length;
+          km += trips.reduce((sum, t) => sum + Number(t.km || 0), 0);
         }
         currentDay.setDate(currentDay.getDate() + 1);
       }
@@ -95,6 +97,7 @@ export default function WeeklyReport({ records = {} }) {
         extra,
         net: earnings - cng - extra,
         tripsCount,
+        km,
         activeDaysCount
       });
     }
@@ -110,6 +113,7 @@ export default function WeeklyReport({ records = {} }) {
   const totalExtra = chartData.reduce((sum, w) => sum + w.extra, 0);
   const totalNet = totalEarnings - totalCng - totalExtra;
   const totalTrips = chartData.reduce((sum, w) => sum + w.tripsCount, 0);
+  const totalKm = chartData.reduce((sum, w) => sum + w.km, 0);
 
   const formatCurrency = (val) => {
     return `₹${Number(val).toLocaleString('en-IN')}`;
@@ -208,6 +212,7 @@ export default function WeeklyReport({ records = {} }) {
                 <th>Week Range</th>
                 <th style={{ width: '110px', textAlign: 'center' }}>Logged Days</th>
                 <th style={{ width: '80px', textAlign: 'center' }}>Trips</th>
+                <th style={{ textAlign: 'right' }}>Distance</th>
                 <th style={{ textAlign: 'right' }}>Earnings</th>
                 <th style={{ textAlign: 'right' }}>CNG</th>
                 <th style={{ textAlign: 'right' }}>Extra</th>
@@ -220,6 +225,7 @@ export default function WeeklyReport({ records = {} }) {
                   <td className="font-heading" style={{ fontWeight: 'bold', fontSize: '1.05rem', color: 'var(--text-white)' }}>{w.dateRangeLabel}</td>
                   <td className="font-number" style={{ textAlign: 'center' }}>{w.activeDaysCount} {w.activeDaysCount === 1 ? 'day' : 'days'}</td>
                   <td className="font-number" style={{ textAlign: 'center' }}>{w.tripsCount}</td>
+                  <td className="font-number" style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{w.km > 0 ? `${w.km.toFixed(1)} km` : '-'}</td>
                   <td className="font-number" style={{ textAlign: 'right', color: 'var(--primary)' }}>{formatCurrency(w.earnings)}</td>
                   <td className="font-number" style={{ textAlign: 'right', color: 'var(--red)' }}>{formatCurrency(w.cng)}</td>
                   <td className="font-number" style={{ textAlign: 'right', color: 'var(--red)' }}>{formatCurrency(w.extra)}</td>
@@ -231,6 +237,7 @@ export default function WeeklyReport({ records = {} }) {
               <tr className="row-total">
                 <td colSpan="2">PERIOD TOTALS</td>
                 <td className="font-number" style={{ textAlign: 'center' }}>{totalTrips}</td>
+                <td className="font-number" style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{totalKm.toFixed(1)} km</td>
                 <td className="font-number" style={{ textAlign: 'right', color: 'var(--primary)' }}>{formatCurrency(totalEarnings)}</td>
                 <td className="font-number" style={{ textAlign: 'right', color: 'var(--red)' }}>{formatCurrency(totalCng)}</td>
                 <td className="font-number" style={{ textAlign: 'right', color: 'var(--red)' }}>{formatCurrency(totalExtra)}</td>

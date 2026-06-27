@@ -72,6 +72,7 @@ export default function DailyReport({ records = {}, pageOffset, setPageOffset })
     const extra = (dayRecord.extra || []).reduce((sum, e) => sum + Number(e.amount || 0), 0);
     const net = earnings - cng - extra;
     const tripsCount = trips.length;
+    const km = trips.reduce((sum, t) => sum + Number(t.km || 0), 0);
 
     // Formatting date labels
     const dateLabel = date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }); // e.g. "12 Jun"
@@ -86,6 +87,7 @@ export default function DailyReport({ records = {}, pageOffset, setPageOffset })
       extra,
       net,
       tripsCount,
+      km,
       status: dayRecord.status || 'absent'
     };
   });
@@ -96,6 +98,7 @@ export default function DailyReport({ records = {}, pageOffset, setPageOffset })
   const totalExtra = chartData.reduce((sum, d) => sum + d.extra, 0);
   const totalNet = totalEarnings - totalCng - totalExtra;
   const totalTrips = chartData.reduce((sum, d) => sum + d.tripsCount, 0);
+  const totalKm = chartData.reduce((sum, d) => sum + d.km, 0);
 
   const formatCurrency = (val) => {
     return `₹${Number(val).toLocaleString('en-IN')}`;
@@ -216,6 +219,7 @@ export default function DailyReport({ records = {}, pageOffset, setPageOffset })
                 <th>Date</th>
                 <th style={{ width: '80px', textAlign: 'center' }}>Status</th>
                 <th style={{ width: '80px', textAlign: 'center' }}>Trips</th>
+                <th style={{ textAlign: 'right' }}>Distance</th>
                 <th style={{ textAlign: 'right' }}>Earnings</th>
                 <th style={{ textAlign: 'right' }}>CNG</th>
                 <th style={{ textAlign: 'right' }}>Extra</th>
@@ -232,6 +236,7 @@ export default function DailyReport({ records = {}, pageOffset, setPageOffset })
                     </span>
                   </td>
                   <td className="font-number" style={{ textAlign: 'center' }}>{d.tripsCount}</td>
+                  <td className="font-number" style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{d.km > 0 ? `${d.km.toFixed(1)} km` : '-'}</td>
                   <td className="font-number" style={{ textAlign: 'right', color: 'var(--primary)' }}>{formatCurrency(d.earnings)}</td>
                   <td className="font-number" style={{ textAlign: 'right', color: 'var(--red)' }}>{formatCurrency(d.cng)}</td>
                   <td className="font-number" style={{ textAlign: 'right', color: 'var(--red)' }}>{formatCurrency(d.extra)}</td>
@@ -243,6 +248,7 @@ export default function DailyReport({ records = {}, pageOffset, setPageOffset })
               <tr className="row-total">
                 <td colSpan="2">PERIOD TOTALS</td>
                 <td className="font-number" style={{ textAlign: 'center' }}>{totalTrips}</td>
+                <td className="font-number" style={{ textAlign: 'right', color: 'var(--text-secondary)' }}>{totalKm.toFixed(1)} km</td>
                 <td className="font-number" style={{ textAlign: 'right', color: 'var(--primary)' }}>{formatCurrency(totalEarnings)}</td>
                 <td className="font-number" style={{ textAlign: 'right', color: 'var(--red)' }}>{formatCurrency(totalCng)}</td>
                 <td className="font-number" style={{ textAlign: 'right', color: 'var(--red)' }}>{formatCurrency(totalExtra)}</td>
