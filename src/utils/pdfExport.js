@@ -26,10 +26,16 @@ export async function exportToPdf(activeTab, data) {
     const totalKm = trips.reduce((sum, t) => sum + Number(t.km || 0), 0);
     const netProfit = totalEarnings - cng - extraTotal;
     const status = data.attendanceStatus === 'present' ? 'PRESENT' : 'ABSENT';
+    const startKm = data.todayRecord?.startKm;
+    const endKm = data.todayRecord?.endKm;
+    const overallKm = (startKm !== undefined && endKm !== undefined) ? (endKm - startKm) : null;
 
     bodyHtml = `
       <div class="pdf-meta">
         <div><strong>Driver Status:</strong> ${status}</div>
+        ${overallKm !== null ? `
+          <div><strong>Odometer Range:</strong> ${startKm} - ${endKm} (${overallKm.toFixed(1)} km)</div>
+        ` : ''}
         <div><strong>Date:</strong> ${new Date().toLocaleDateString('en-IN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</div>
       </div>
       
@@ -243,11 +249,17 @@ export async function exportToPdf(activeTab, data) {
       const totalKm = data.totalKm || 0;
       const avgFare = data.avgFare || '0.00';
       const attendance = data.attendance || 'absent';
+      const startKm = data.startKm;
+      const endKm = data.endKm;
+      const overallKm = (startKm !== undefined && endKm !== undefined) ? (endKm - startKm) : null;
 
       bodyHtml = `
         <div class="pdf-meta">
           <div><strong>Selected Date:</strong> ${selectedDate}</div>
           <div><strong>Attendance Status:</strong> ${attendance.toUpperCase()}</div>
+          ${overallKm !== null ? `
+            <div><strong>Odometer Range:</strong> ${startKm} - ${endKm} (${overallKm.toFixed(1)} km)</div>
+          ` : ''}
         </div>
 
         <div class="pdf-stats-row" style="grid-template-columns: repeat(4, 1fr); margin-bottom: 2rem;">

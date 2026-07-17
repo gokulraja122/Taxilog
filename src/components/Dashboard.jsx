@@ -18,10 +18,12 @@ export default function Dashboard({
   onDeleteTrip, 
   onAddCng, 
   onAddExtra,
+  onUpdateOdometer,
   attendanceStatus 
 }) {
   const [fare, setFare] = useState('');
   const [km, setKm] = useState('');
+  const [pickupTime, setPickupTime] = useState('');
   const [fromLoc, setFromLoc] = useState('');
   const [toLoc, setToLoc] = useState('');
   const [cngInput, setCngInput] = useState('');
@@ -58,6 +60,9 @@ export default function Dashboard({
   const avgFare = tripCount > 0 ? (totalEarnings / tripCount).toFixed(2) : '0.00';
   const totalKm = trips.reduce((sum, t) => sum + Number(t.km || 0), 0);
   const netProfit = totalEarnings - cng - extraTotal;
+  const startKmVal = todayRecord?.startKm !== undefined ? todayRecord.startKm : '';
+  const endKmVal = todayRecord?.endKm !== undefined ? todayRecord.endKm : '';
+  const overallKm = (startKmVal !== '' && endKmVal !== '') ? Number((Number(endKmVal) - Number(startKmVal)).toFixed(1)) : 0;
 
   // Format numbers to Indian currency style if needed, or plain numbers
   const formatCurrency = (val) => {
@@ -66,11 +71,22 @@ export default function Dashboard({
 
   const handleTripSubmit = (e) => {
     e.preventDefault();
-    if (!fare || !km || !fromLoc || !toLoc) return;
+    if (!fare || !km || !fromLoc || !toLoc || !pickupTime) return;
+
+    // Helper to format time range to 12-hour AM/PM format for displays
+    const formatTimeTo12Hr = (time24) => {
+      if (!time24) return '';
+      const [hrs, mins] = time24.split(':');
+      const h = Number(hrs);
+      const ampm = h >= 12 ? 'PM' : 'AM';
+      const displayHr = h % 12 || 12;
+      return `${String(displayHr).padStart(2, '0')}:${mins} ${ampm}`;
+    };
 
     const newTrip = {
       id: Date.now().toString(),
-      time: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit' }),
+      pickupTime,
+      time: formatTimeTo12Hr(pickupTime),
       fare: Number(fare),
       km: Number(km),
       from: fromLoc,
@@ -84,6 +100,7 @@ export default function Dashboard({
     setKm('');
     setFromLoc('');
     setToLoc('');
+    setPickupTime('');
   };
 
   const handleCngSubmit = (e) => {
@@ -219,6 +236,63 @@ export default function Dashboard({
           </div>
         </div>
 
+        {/* Daily Odometer (Km) Card */}
+        <div className="stat-card">
+          <div className="stat-card-header">
+            <span className="stat-card-title">Daily Odometer (Km)</span>
+            <Route size={16} style={{ color: 'var(--primary)' }} />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', margin: '0.25rem 0' }}>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.15rem' }}>START KM</label>
+                <input 
+                  type="number"
+                  step="0.1"
+                  className="cng-input"
+                  style={{ width: '100%' }}
+                  placeholder="Start"
+                  value={startKmVal}
+                  onChange={(e) => onUpdateOdometer(e.target.value, endKmVal)}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ fontSize: '0.7rem', color: 'var(--text-muted)', display: 'block', marginBottom: '0.15rem' }}>END KM</label>
+                <input 
+                  type="number"
+                  step="0.1"
+                  className="cng-input"
+                  style={{ width: '100%' }}
+                  placeholder="End"
+                  value={endKmVal}
+                  onChange={(e) => onUpdateOdometer(startKmVal, e.target.value)}
+                />
+              </div>
+            </div>
+            {startKmVal !== '' && endKmVal !== '' && (
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-light)', borderTop: '1px solid var(--border-dark)', paddingTop: '0.5rem', marginTop: '0.25rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Overall Km:</span>
+                  <span className="font-number" style={{ fontWeight: 'bold' }}>{overallKm.toFixed(1)} km</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Logged Trips:</span>
+                  <span className="font-number" style={{ color: 'var(--primary)' }}>{totalKm.toFixed(1)} km</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px dashed var(--border-dark)', paddingTop: '0.2rem', marginTop: '0.1rem' }}>
+                  <span>Difference:</span>
+                  <span className="font-number" style={{ 
+                    fontWeight: 'bold', 
+                    color: (overallKm - totalKm) >= 0 ? 'var(--green)' : 'var(--red)' 
+                  }}>
+                    {((overallKm - totalKm) >= 0 ? '+' : '')}{(overallKm - totalKm).toFixed(1)} km
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Net Profit Bar */}
         <div className="stat-card net-profit-card">
           <div className="stat-card-header">
@@ -266,7 +340,18 @@ export default function Dashboard({
                 onChange={(e) => setFare(e.target.value)}
               />
             </div>
-            
+
+            <div className="form-group">
+              <label className="form-label">Time</label>
+              <input 
+                type="time" 
+                className="form-input" 
+                required 
+                value={pickupTime}
+                onChange={(e) => setPickupTime(e.target.value)}
+              />
+            </div>
+
             <div className="form-group">
               <label className="form-label">Distance (Km)</label>
               <input 

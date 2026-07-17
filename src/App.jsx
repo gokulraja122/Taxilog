@@ -133,6 +133,20 @@ export default function App() {
     });
   };
 
+  const handleUpdateOdometer = (start, end) => {
+    setRecords(prev => {
+      const todayData = prev[todayStr] || { status: 'present', trips: [], cng: 0 };
+      return {
+        ...prev,
+        [todayStr]: {
+          ...todayData,
+          startKm: start === '' ? undefined : Number(start),
+          endKm: end === '' ? undefined : Number(end)
+        }
+      };
+    });
+  };
+
   // Generate date calculations in App for clean PDF outputs
   const handleExportPdf = () => {
     let exportData = {};
@@ -205,6 +219,8 @@ export default function App() {
         net: gross - cng - extraTotal,
         totalTrips: trips.length,
         totalKm,
+        startKm: dayRecord?.startKm,
+        endKm: dayRecord?.endKm,
         avgFare: trips.length > 0 ? (gross / trips.length).toFixed(2) : '0.00',
         attendance: dayRecord?.status || 'absent'
       };
@@ -394,6 +410,7 @@ export default function App() {
             onDeleteTrip={handleDeleteTrip}
             onAddCng={handleAddCng}
             onAddExtra={handleAddExtra}
+            onUpdateOdometer={handleUpdateOdometer}
             attendanceStatus={attendanceStatus}
           />
         )}
